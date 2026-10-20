@@ -1,1 +1,1 @@
-export { default } from "./SpotifyCompanion";
+export { default } from "./pages/SpotifyCompanionPage";

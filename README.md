@@ -33,3 +33,12 @@ audio. Adjustments must be made manually in Spotify.
 npm run typecheck
 npm run build
 ```
+
+## Source organization
+
+- `src/pages/` composes the application page and coordinates UI state.
+- `src/components/` contains focused, presentational interface components.
+- `src/schemas/` defines the Spotify API, track, token, and equalizer data types.
+- `src/services/` handles Spotify authorization/API requests and EQ recommendations.
+- `src/theme/` contains the Tailwind design tokens.
+- `src/utils/` contains small shared formatting helpers.

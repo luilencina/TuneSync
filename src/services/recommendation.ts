@@ -1,10 +1,4 @@
-import type { Equalizer } from "../types/components";
-
-export type EqualizerRecommendation = {
-  label: string;
-  reason: string;
-  equalizer: Equalizer;
-};
+import type { Equalizer, EqualizerRecommendation } from "../schemas/equalizer";
 
 const NEUTRAL: EqualizerRecommendation = {
   label: "Equilibrado",

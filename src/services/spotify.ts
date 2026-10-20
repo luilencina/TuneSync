@@ -1,3 +1,13 @@
+import type {
+  SpotifyApiErrorBody,
+  SpotifyArtistResponse,
+  SpotifyAuthorizationResult,
+  SpotifyPlayingResponse,
+  SpotifyToken,
+  SpotifyTokenResponse,
+  SpotifyTrack,
+} from "../schemas/spotify";
+
 const CLIENT_ID_KEY = "tunesync-spotify-client-id";
 const TOKEN_KEY = "tunesync-spotify-token";
 const OAUTH_STATE_KEY = "tunesync-spotify-oauth-state";
@@ -5,66 +15,6 @@ const CODE_VERIFIER_KEY = "tunesync-spotify-code-verifier";
 const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
 const TOKEN_ENDPOINT = "https://accounts.spotify.com/api/token";
 const API_ENDPOINT = "https://api.spotify.com/v1";
-
-type StoredToken = {
-  accessToken: string;
-  refreshToken: string | null;
-  expiresAt: number;
-};
-
-type TokenResponse = {
-  access_token: string;
-  expires_in: number;
-  refresh_token?: string;
-};
-
-type SpotifyApiErrorBody = {
-  error?: { message?: string } | string;
-};
-
-type SpotifyArtist = {
-  id: string | null;
-  name: string;
-};
-
-type SpotifyPlayingResponse = {
-  is_playing: boolean;
-  progress_ms: number | null;
-  item: {
-    id: string | null;
-    name: string;
-    duration_ms: number;
-    artists: SpotifyArtist[];
-    album: {
-      name: string;
-      images: { url: string }[];
-    };
-    external_urls?: { spotify?: string };
-  } | null;
-};
-
-type SpotifyArtistResponse = {
-  genres?: string[];
-};
-
-export type SpotifyTrack = {
-  id: string | null;
-  name: string;
-  artist: string;
-  album: string;
-  imageUrl: string | null;
-  spotifyUrl: string | null;
-  isPlaying: boolean;
-  progressMs: number | null;
-  durationMs: number | null;
-  genres: string[];
-  genreWarning: string | null;
-};
-
-export type SpotifyAuthorizationResult = {
-  clientId: string;
-  token: StoredToken;
-};
 
 const genreCache = new Map<string, string[]>();
 
@@ -86,7 +36,7 @@ function createRandomToken(byteLength: number) {
   return encodeBase64Url(bytes);
 }
 
-function loadStoredToken(): StoredToken | null {
+function loadStoredToken(): SpotifyToken | null {
   const stored = localStorage.getItem(TOKEN_KEY);
   if (!stored) return null;
 
@@ -102,7 +52,7 @@ function loadStoredToken(): StoredToken | null {
       "refreshToken" in token &&
       (typeof token.refreshToken === "string" || token.refreshToken === null)
     ) {
-      return token as StoredToken;
+      return token as SpotifyToken;
     }
   } catch {
     localStorage.removeItem(TOKEN_KEY);
@@ -111,11 +61,14 @@ function loadStoredToken(): StoredToken | null {
   return null;
 }
 
-function saveToken(token: StoredToken) {
+function saveToken(token: SpotifyToken) {
   localStorage.setItem(TOKEN_KEY, JSON.stringify(token));
 }
 
-function toStoredToken(response: TokenResponse, previous?: StoredToken): StoredToken {
+function toStoredToken(
+  response: SpotifyTokenResponse,
+  previous?: SpotifyToken,
+): SpotifyToken {
   return {
     accessToken: response.access_token,
     refreshToken: response.refresh_token ?? previous?.refreshToken ?? null,
@@ -162,7 +115,7 @@ async function requestToken(body: URLSearchParams) {
     throw new Error(await parseSpotifyError(response));
   }
 
-  return (await response.json()) as TokenResponse;
+  return (await response.json()) as SpotifyTokenResponse;
 }
 
 export function getSavedClientId() {
@@ -249,7 +202,7 @@ export async function completeSpotifyAuthorization(): Promise<SpotifyAuthorizati
   return { clientId, token };
 }
 
-async function refreshAccessToken(token: StoredToken): Promise<StoredToken> {
+async function refreshAccessToken(token: SpotifyToken): Promise<SpotifyToken> {
   const clientId = getSavedClientId();
   if (!token.refreshToken || !clientId) {
     throw new Error("Reconecte sua conta Spotify para continuar.");
@@ -269,8 +222,8 @@ async function refreshAccessToken(token: StoredToken): Promise<StoredToken> {
 
 async function fetchWithSpotifyToken(
   url: string,
-  token: StoredToken,
-): Promise<{ response: Response; token: StoredToken }> {
+  token: SpotifyToken,
+): Promise<{ response: Response; token: SpotifyToken }> {
   let activeToken = token;
   if (activeToken.expiresAt <= Date.now() + 30_000) {
     activeToken = await refreshAccessToken(activeToken);
@@ -294,7 +247,7 @@ async function fetchWithSpotifyToken(
   return { response, token: activeToken };
 }
 
-export async function getCurrentTrack(token: StoredToken): Promise<SpotifyTrack | null> {
+export async function getCurrentTrack(token: SpotifyToken): Promise<SpotifyTrack | null> {
   const { response, token: activeToken } = await fetchWithSpotifyToken(
     `${API_ENDPOINT}/me/player/currently-playing`,
     token,
@@ -348,7 +301,7 @@ export async function getCurrentTrack(token: StoredToken): Promise<SpotifyTrack 
   };
 }
 
-export function getUpdatedToken(previous: StoredToken) {
+export function getUpdatedToken(previous: SpotifyToken) {
   const current = loadStoredToken();
   return current?.accessToken !== previous.accessToken ? current : previous;
 }
