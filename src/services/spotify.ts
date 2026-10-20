@@ -1,5 +1,4 @@
 const CLIENT_ID_KEY = "tunesync-spotify-client-id";
-const DEFAULT_CLIENT_ID = "756094ef609d4cc1900da4e0e38113f9";
 const TOKEN_KEY = "tunesync-spotify-token";
 const OAUTH_STATE_KEY = "tunesync-spotify-oauth-state";
 const CODE_VERIFIER_KEY = "tunesync-spotify-code-verifier";
@@ -167,7 +166,7 @@ async function requestToken(body: URLSearchParams) {
 }
 
 export function getSavedClientId() {
-  return localStorage.getItem(CLIENT_ID_KEY) ?? DEFAULT_CLIENT_ID;
+  return localStorage.getItem(CLIENT_ID_KEY) ?? "";
 }
 
 export function getSavedToken() {
