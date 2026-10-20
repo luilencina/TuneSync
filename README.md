@@ -1,8 +1,8 @@
 # TuneSync
 
-The public GitHub Pages build intentionally does not include Spotify
-credentials, Spotify API integration, recommendations, or equalizer controls.
-Those features are available only while running the development server.
+The app connects to Spotify to display the current track and give a genre-based
+equalizer recommendation. TuneSync never contains a Spotify Client ID or
+Client Secret; enter the public Client ID in the app when connecting.
 
 ## Production deployment
 
@@ -10,7 +10,7 @@ The `main` branch GitHub Actions workflow builds the app and publishes `dist/`
 to GitHub Pages. Push the changes to `main` to replace the currently published
 version.
 
-## Development-only Spotify prototype
+## Run locally
 
 Run the prototype locally with:
 
@@ -19,9 +19,9 @@ npm install
 npm run dev
 ```
 
-The development screen asks for a Spotify Client ID and uses the Spotify API
-to display currently playing track metadata and genre-based EQ suggestions.
-The Client ID is not checked into source code. For local OAuth testing, add
+The app asks for a Spotify Client ID and uses the Spotify API to display
+currently playing track metadata and genre-based EQ suggestions. The Client ID
+is not checked into source code. For local OAuth testing, add
 `http://localhost:5173/` as a Redirect URI in the Spotify Developer Dashboard.
 
 The suggestions are estimates, not audio analysis, and cannot change Spotify's
