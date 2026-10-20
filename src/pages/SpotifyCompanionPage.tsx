@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import AppFooter from "../components/AppFooter";
 import AppHeader from "../components/AppHeader";
+import BluetoothScanner from "../components/BluetoothScanner";
 import EqualizerRecommendationCard from "../components/EqualizerRecommendationCard";
 import FeedbackMessage from "../components/FeedbackMessage";
 import HeroSection from "../components/HeroSection";
@@ -25,6 +26,9 @@ import {
 const POLL_INTERVAL_MS = 20_000;
 
 export default function SpotifyCompanion() {
+  const [activeTab, setActiveTab] = useState<"spotify" | "bluetooth">(
+    "spotify",
+  );
   const [clientId, setClientId] = useState(getSavedClientId);
   const [token, setToken] = useState<SpotifyToken | null>(getSavedToken);
   const [track, setTrack] = useState<SpotifyTrack | null>(null);
@@ -163,39 +167,90 @@ export default function SpotifyCompanion() {
         <AppHeader connected={Boolean(token)} />
         <HeroSection />
 
-        {!token ? (
-          <SpotifyConnectionForm
-            clientId={clientId}
-            onClientIdChange={setClientId}
-            onConnect={() => void handleConnect()}
-          />
-        ) : (
-          <>
-            <NowPlayingSection
-              track={track}
-              loading={loading}
-              onRefresh={() => void refreshTrack()}
+        <nav
+          className="mt-2 flex gap-2 border-b border-foreground/10"
+          aria-label="Seções do TuneSync"
+          role="tablist"
+        >
+          <button
+            id="spotify-tab"
+            className={`min-h-11 border-b-2 px-4 text-sm font-semibold transition ${
+              activeTab === "spotify"
+                ? "border-accent text-accent"
+                : "border-transparent text-text-disabled hover:text-foreground"
+            }`}
+            role="tab"
+            aria-selected={activeTab === "spotify"}
+            aria-controls="spotify-panel"
+            onClick={() => setActiveTab("spotify")}
+          >
+            Spotify
+          </button>
+          <button
+            id="bluetooth-tab"
+            className={`min-h-11 border-b-2 px-4 text-sm font-semibold transition ${
+              activeTab === "bluetooth"
+                ? "border-accent text-accent"
+                : "border-transparent text-text-disabled hover:text-foreground"
+            }`}
+            role="tab"
+            aria-selected={activeTab === "bluetooth"}
+            aria-controls="bluetooth-panel"
+            onClick={() => setActiveTab("bluetooth")}
+          >
+            Bluetooth BLE
+          </button>
+        </nav>
+
+        <section
+          id="spotify-panel"
+          role="tabpanel"
+          aria-labelledby="spotify-tab"
+          hidden={activeTab !== "spotify"}
+        >
+          {!token ? (
+            <SpotifyConnectionForm
+              clientId={clientId}
+              onClientIdChange={setClientId}
+              onConnect={() => void handleConnect()}
             />
-
-            {track && recommendation && (
-              <EqualizerRecommendationCard
-                recommendation={recommendation}
-                equalizer={equalizer}
-                onEqualizerChange={updateEqualizer}
+          ) : (
+            <>
+              <NowPlayingSection
+                track={track}
+                loading={loading}
+                onRefresh={() => void refreshTrack()}
               />
-            )}
 
-            <div className="mt-4 flex items-center justify-between gap-4 text-[0.7rem] text-text-disabled">
-              <span>Verificação automática a cada 20 segundos</span>
-              <button
-                className="min-h-10 rounded-[0.625rem] border border-foreground/15 px-3 text-xs text-text-subtle transition hover:border-accent/40 hover:bg-accent/10"
-                onClick={handleDisconnect}
-              >
-                Desconectar
-              </button>
-            </div>
-          </>
-        )}
+              {track && recommendation && (
+                <EqualizerRecommendationCard
+                  recommendation={recommendation}
+                  equalizer={equalizer}
+                  onEqualizerChange={updateEqualizer}
+                />
+              )}
+
+              <div className="mt-4 flex items-center justify-between gap-4 text-[0.7rem] text-text-disabled">
+                <span>Verificação automática a cada 20 segundos</span>
+                <button
+                  className="min-h-10 rounded-[0.625rem] border border-foreground/15 px-3 text-xs text-text-subtle transition hover:border-accent/40 hover:bg-accent/10"
+                  onClick={handleDisconnect}
+                >
+                  Desconectar
+                </button>
+              </div>
+            </>
+          )}
+        </section>
+
+        <section
+          id="bluetooth-panel"
+          role="tabpanel"
+          aria-labelledby="bluetooth-tab"
+          hidden={activeTab !== "bluetooth"}
+        >
+          <BluetoothScanner />
+        </section>
 
         {error && (
           <FeedbackMessage message={error} onDismiss={() => setError(null)} />

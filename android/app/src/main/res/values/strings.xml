@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TuneSync</string>
+    <string name="title_activity_main">TuneSync</string>
+    <string name="package_name">com.luilencina.tunesync</string>
+    <string name="custom_url_scheme">com.luilencina.tunesync</string>
+</resources>
